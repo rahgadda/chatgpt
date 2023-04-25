@@ -6,3 +6,15 @@ docker run -it --rm --name weaviate -e "OPENAI_APIKEY=XX" -e "QUERY_DEFAULTS_LIM
 
 ## -- Testing
 curl -X GET http://localhost:8080/v1/meta
+
+# -- Text Extractor
+pip install fastapi
+pip install uvicorn
+pip install requests
+pip install pdfminer
+pip install weaviate-client
+pip install python-multipart
+
+pip install gradio
+
+uvicorn fileUpload:app --reload
