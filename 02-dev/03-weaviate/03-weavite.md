@@ -14,8 +14,13 @@
   - Relational Databases designed couple of decades ago work with structured data, using features like primary keys, tables (rows and columns). This has inability to scale horizontally to support increasing workloads.
   - NoSQL database work with semi-structured and unstructured data. They come in the form of the document store, key-value store, graph database, and column-oriented DB. They have ability to scale horizontally.
   - A vector is a list of numbers represented as a sequence of numbers or as a single value in a row and a single value in the column section.
+  ![](../../01-images/DBEvolution.jpg)
   - They stores data such as text, image, and audio in the form of vectors.
   ![](../../01-images/LinearAlgebra.png)
+  ![](../../01-images/VectorDB_Storage.png)
+  - This type of DB can't find a 100% match, but it will find a very close one, and return the result.
+  - Vector indexing mechanisms is the core to represent the data.
+
 - `Modules:`
   - Used to extend Weaviate core capabilities and are optional.
   - They are used to automatically vectorize your content (i.e., *2vec).

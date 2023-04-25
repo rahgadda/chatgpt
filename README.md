@@ -9,8 +9,11 @@
 
 ## Example
 - As part of this demo we will try to create an example to help ChatGPT to provide information documents uploaded.
+  - Reading PDF
+    - Camelot
+    - PDFMiner
+    - PyPDF2
   - Gradio
-  - PyPDF2
-  - FastAPI
   - Weaviate DB
+
 ![](./01-images/DocumentGPT.jpeg)
