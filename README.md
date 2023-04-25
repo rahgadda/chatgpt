@@ -6,3 +6,11 @@
 - ChatGPT `Large language models(LLM)` is typically based on `deep learning algorithms` where model is trained to understand and generate natural language .It require a significant amount of computing power and data to be trained effectively. Example Google's BERT, and Facebook's RoBERTa, OpenAI GPT series (such as GPT-3/4).
 
 ![](./01-images/AI-vs-ML-vs-Deep-Learning.png)
+
+## Example
+- As part of this demo we will try to create an example to help ChatGPT to provide information documents uploaded.
+  - Gradio
+  - PyPDF2
+  - FastAPI
+  - Weaviate DB
+![](./01-images/DocumentGPT.jpeg)
