@@ -21,6 +21,13 @@
   - This type of DB can't find a 100% match, but it will find a very close one, and return the result.
   - Vector indexing mechanisms is the core to represent the data.
 
+- `Vector Embeddings` 
+   - It capture the meaning and context of data, usually predicted by Machine Learning models.
+   - At the time of entry/import or 
+
+- `Vector search`
+  - 
+
 - `Modules:`
   - Used to extend Weaviate core capabilities and are optional.
   - They are used to automatically vectorize your content (i.e., *2vec).
