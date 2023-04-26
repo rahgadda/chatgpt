@@ -22,10 +22,11 @@
   - Vector indexing mechanisms is the core to represent the data.
 
 - `Vector Embeddings` 
+   - Embeddings are vectors or arrays of numbers that represent the meaning and the context of tokens processed by the model.
    - It capture the meaning and context of data, usually predicted by Machine Learning models.
    - At the time of entry/import or 
 
-- `Vector search`
+- `Vector Search`
   - 
 
 - `Modules:`
