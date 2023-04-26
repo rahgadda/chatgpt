@@ -16,8 +16,16 @@
     - PyPDF2
   - Weaviate DB
   - Langchain
-  - ChatGPT
+  - LLM
+    - ChatGPT
+    - Huggingface
+    - Cohere
+    - GPT4All
   - AutoGPT
   - Gradio
 
 ![](./01-images/DocumentGPT.jpeg)
+
+## Reference
+- [Youtube - ChatGPT for YOUR OWN PDF](https://www.youtube.com/watch?v=TLf90ipMzfE)
+- [Youtube - Chat With Multiple PDF Files](https://youtu.be/Ix9WIZpArm0)
