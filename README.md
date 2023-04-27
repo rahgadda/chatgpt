@@ -30,3 +30,4 @@
 - [Youtube - ChatGPT for YOUR OWN PDF](https://www.youtube.com/watch?v=TLf90ipMzfE)
 - [Youtube - Chat With Multiple PDF Files](https://youtu.be/Ix9WIZpArm0)
 - [Youtube - ChatGPT work with your enterprise data](https://www.youtube.com/watch?v=tW2EA4aZ_YQ)
+- [Youtube - LangChain101: Question A 300 Page Book](https://www.youtube.com/watch?v=h0DHDp1FbmQ)
