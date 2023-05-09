@@ -1,52 +1,44 @@
-import torch
-from transformers import GPT2LMHeadModel, GPT2Tokenizer
-
-# Load pre-trained GPT-2 model and tokenizer
-gpt2_model = GPT2LMHeadModel.from_pretrained('gpt2')
-tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
-
-# Add padding token
-tokenizer.add_special_tokens({'pad_token': '[PAD]'})
-def generate_latent_vectors(input_sequences):
-    input_ids = []
-    attention_masks = []
-    for sequence in input_sequences:
-        encoded_dict = tokenizer.encode_plus(sequence, add_special_tokens=True, max_length=256, pad_to_max_length=True, return_attention_mask=True)
-        input_ids.append(encoded_dict['input_ids'])
-        attention_masks.append(encoded_dict['attention_mask'])
-    input_ids = torch.tensor(input_ids)
-    attention_masks = torch.tensor(attention_masks)
-    with torch.no_grad():
-        gpt2_output = gpt2_model(input_ids, attention_masks)[2][-2][:, -1, :]
-    return gpt2_output.numpy()
-
-def calculate_similarity(source_input_sequences, uploaded_input_sequences):
-    # Generate latent vectors for source input sequences
-    training_latent_vectors = generate_latent_vectors(source_input_sequences)
-    
-    # Generate latent vectors for uploaded input sequences
-    uploaded_latent_vectors = generate_latent_vectors(uploaded_input_sequences)
-    
-    # Calculate cosine similarity between training and uploaded latent vectors
-    similarity_scores = torch.nn.functional.cosine_similarity(torch.tensor(training_latent_vectors), torch.tensor(uploaded_latent_vectors), dim=1)
-    return similarity_scores
-
-# Example usage
-source_file = '/workspace/chatgpt/02-dev/source_text.csv'
-uploaded_file = '/workspace/chatgpt/02-dev/uploaded_text.csv'
-
-# Load source and uploaded input sequences from csv files
 import csv
-with open(source_file, 'r') as f:
-    reader = csv.reader(f)
-    source_input_sequences = [row[0] for row in reader]
-with open(uploaded_file, 'r') as f:
-    reader = csv.reader(f)
-    uploaded_input_sequences = [row[0] for row in reader]
+import torch
+from transformers import GPTNeoForCausalLM, GPT2Tokenizer
 
-# Calculate similarity scores
-similarity_scores = calculate_similarity(source_input_sequences, uploaded_input_sequences)
+# Load tokenizer and model
+print("Loading model")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model_name = "EleutherAI/gpt-neo-2.7B"
+tokenizer = GPT2Tokenizer.from_pretrained(model_name)
+model = GPTNeoForCausalLM.from_pretrained(model_name)
 
-# Print results
-for i in range(len(similarity_scores)):
-    print(f"Similarity score for uploaded file {i+1}: {similarity_scores[i]*100:.2f}%")
+config = model.config
+config.n_embd = 2560
+config.n_head = 20
+config.n_layer = 32
+
+print("Update config and reload model")
+model = GPTNeoForCausalLM(config)
+model.resize_token_embeddings(len(tokenizer))
+model.to(device)
+
+# Load source file and convert to list of dictionaries
+print("Reading Source Data")
+with open('/workspace/chatgpt/02-dev/source_text.csv') as f:
+    reader = csv.DictReader(f)
+    source_data = [row for row in reader]
+
+# Create a list of all column names in the source data
+source_column_names = [col.lower() for col in source_data[0].keys()]
+
+# Load input file and convert to list of dictionaries
+print("Reading Upload Data")
+with open('/workspace/chatgpt/02-dev/uploaded_text.csv') as f:
+    reader = csv.DictReader(f)
+    input_data = [row for row in reader]
+
+# Compare column names in input data with column names in source data
+print("Comparing Data")
+for input_row in input_data:
+    input_column_names = [col.lower() for col in input_row.keys()]
+    similarity = sum([1 for col in input_column_names if col in source_column_names]) / len(input_column_names)
+    print(f"Similarity: {similarity:.2%}")
+
+# pip install torch transformers
