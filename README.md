@@ -10,18 +10,18 @@
 
 ## Example
 - As part of this demo we will try to create an example to help ChatGPT to provide information about Customer 360 for Underwriter.
-  - Extraction
+  - [Extraction](./02-dev/01-extraction/extraction.md)
     - CSV
     - Excel
     - PDF
-  - Langchain
-  - Weaviate DB
+  - [Langchain](./02-dev/02-langchain/langchain.md)
+  - [Weaviate DB](./02-dev/03-weaviate/weavite.md)
   - LLM
-    - OpenAI
+    - [OpenAI](./02-dev/04-llm/openai.md)
     - Huggingface
     - Cohere
-    - GPT4All
-  - Gradio
+    - [GPT4All](./02-dev/04-llm/gpt4all.md)
+  - [Gradio](./02-dev/05-gradio/gradio.md)
 
   ![](./01-images/DocumentGPT.jpeg)
 
