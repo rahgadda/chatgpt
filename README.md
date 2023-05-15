@@ -21,7 +21,6 @@
     - Huggingface
     - Cohere
     - GPT4All
-  - AutoGPT
   - Gradio
 
 ![](./01-images/DocumentGPT.jpeg)
