@@ -10,14 +10,14 @@
 
 ## Example
 - As part of this demo we will try to create an example to help ChatGPT to provide information about Customer 360 for Underwriter.
-  - Reading PDF
-    - Camelot
-    - PDFMiner
-    - PyPDF2
-  - Weaviate DB
+  - Extraction
+    - CSV
+    - Excel
+    - PDF
   - Langchain
+  - Weaviate DB
   - LLM
-    - ChatGPT
+    - OpenAI
     - Huggingface
     - Cohere
     - GPT4All
