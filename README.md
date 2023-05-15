@@ -23,7 +23,7 @@
     - GPT4All
   - Gradio
 
-![](./01-images/DocumentGPT.jpeg)
+  ![](./01-images/DocumentGPT.jpeg)
 
 ## Reference
 - [Youtube - ChatGPT for YOUR OWN PDF](https://www.youtube.com/watch?v=TLf90ipMzfE)
