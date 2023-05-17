@@ -17,6 +17,7 @@
   - [Langchain](./02-dev/02-langchain/langchain.md)
   - [Weaviate DB](./02-dev/03-weaviate/weavite.md)
   - LLM
+    - [Prompting]()
     - [OpenAI](./02-dev/04-llm/openai.md)
     - Huggingface
     - Cohere
