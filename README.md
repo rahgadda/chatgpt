@@ -15,12 +15,14 @@
     - Excel
     - PDF
   - [Langchain](./02-dev/02-langchain/langchain.md)
-  - [Weaviate DB](./02-dev/03-weaviate/weavite.md)
+  - Vector DB
+    - [FAISS](./02-dev/03-weaviate/faiss.md)
+    - [Weaviate DB](./02-dev/03-weaviate/weavite.md)
   - LLM
-    - [Prompting]()
+    - [Prompting](./02-dev/04-llm/prompting.md)
     - [OpenAI](./02-dev/04-llm/openai.md)
-    - Huggingface
-    - Cohere
+    - [Huggingface](./02-dev/04-llm/hugginface.md)
+    - [Cohere](./02-dev/04-llm/cohere.md)
     - [GPT4All](./02-dev/04-llm/gpt4all.md)
   - [Gradio](./02-dev/05-gradio/gradio.md)
 
