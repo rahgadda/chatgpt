@@ -2,7 +2,7 @@
 
 ## Overview
 - Weaviate is an open source & low-latency `vector database` that stores both objects and vectors.
-- It store and retrieve data objects based on their semantic properties by indexing them with vectors.
+- It stores and retrieve data objects based on their semantic properties by indexing them with vectors.
 - It can be used stand-alone (aka bring your vectors) or with a variety of modules that can do the vectorization for you and extend the core capabilities.
 - It offers Semantic Search, Question-Answer Extraction, Classification, Customizable Models (PyTorch/TensorFlow/Keras), etc.
 - Built from scratch in Go.
