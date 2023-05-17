@@ -8,7 +8,7 @@
 
 ![](./01-images/AI-vs-ML-vs-Deep-Learning.png)
 
-## Example
+## Examples
 - As part of this demo we will try to create an example to help ChatGPT to provide information about Customer 360 for Underwriter.
   - [Extraction](./02-dev/01-extraction/extraction.md)
     - CSV

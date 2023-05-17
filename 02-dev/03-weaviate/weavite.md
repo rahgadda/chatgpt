@@ -15,10 +15,10 @@
 - 
 
 ## Acronyms
-- `Search`
-  - `Syntactic`: This is the conventional serach that we perform on regular database using like, where etc.. based upon the actual words.
-  - `Semantic`: This is a way of understanding what a user is really looking for, and providing them with the most relevant results possible.
-- `Vector DB`
+- **Search:**
+  - *Syntactic:* This is the conventional serach that we perform on regular database using like, where etc.. based upon the actual words.
+  - *Semantic:* This is a way of understanding what a user is really looking for, and providing them with the most relevant results possible.
+- **Vector DB:**
   - `Relational Databases [RDBMS]` designed couple of decades ago work with structured data, using features like primary keys, tables (rows and columns). This has inability to scale horizontally to support increasing workloads.
   - `NoSQL` database work with semi-structured and unstructured data. They come in the form of the document store, key-value store, graph database, and column-oriented DB. They have ability to scale horizontally.
   - `Graph DB` is also a special type of database that stores data in the form of nodes connected with relationships. The building blocks of this DB are below:
@@ -40,17 +40,17 @@
   
     ![](../../01-images/DBEvolution.jpg)
 
-- `Vector Indexing`
+- **Vector Indexing:**
 
-- `Vector Embeddings` 
+- **Vector Embeddings:**
    - Embeddings are vectors or arrays of numbers that represent the meaning and the context of tokens processed by the model.
    - It capture the meaning and context of data, usually predicted by Machine Learning models.
    - At the time of entry/import or 
 
-- `Vector Search`
+- **Vector Search:**
   - 
 
-- `Modules:`
+- **Modules:**
   - Used to extend Weaviate core capabilities and are optional.
   - They are used to automatically vectorize your content (i.e., *2vec).
   - Add support to new type of vectors.
