@@ -18,12 +18,14 @@
 - `Vector DB`
   - `Relational Databases [RDBMS]` designed couple of decades ago work with structured data, using features like primary keys, tables (rows and columns). This has inability to scale horizontally to support increasing workloads.
   - `NoSQL` database work with semi-structured and unstructured data. They come in the form of the document store, key-value store, graph database, and column-oriented DB. They have ability to scale horizontally.
-  - `Graph DB` is also a special type of database that stores data in the form of nodes connected with relationships. Nodes and relationships are fundamental components that are used. Labels and properties are often included because of the added functionalities they offer. Its building blocks are:
-    - Nodes: The main entities in a graph. They are also sometimes referred to as vertices or points.
-    - Relationships: The connections between those entities. Sometimes they are referred to as edges or links.
-    - Labels: Attributes that group similar nodes together.
-    - Properties: key/value pairs stored within nodes or relationships.
+  - `Graph DB` is also a special type of database that stores data in the form of nodes connected with relationships. The building blocks of this DB are below:
+    - `Nodes:` The main entities in a graph. They are also sometimes referred to as vertices or points.
+    - `Relationships:` The connections between those entities. Sometimes they are referred to as edges or links.
+    - `Labels:` Attributes that group similar nodes together.
+    - `Properties:` key/value pairs stored within nodes or relationships.
       ![](../../01-images/graphvsrdbms.png)
+    
+      `Nodes` and `relationships` are fundamental components of this technology. `Labels` and `properties` are often included because of the added functionalities they offer.
   - We are in the mids of `next revolution - AI revolution`. Every industry will be touched and impacted by AI. `Vector DB` is the next DB technology that is used to store and search the artifcats of AI.
     - A vector is a list of numbers represented as a sequence of numbers or as a single value in a row and a single value in the column section.
       ![](../../01-images/LinearAlgebra.png)
