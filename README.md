@@ -18,6 +18,7 @@
   - Vector DB
     - [FAISS](./02-dev/03-weaviate/faiss.md)
     - [Weaviate DB](./02-dev/03-weaviate/weavite.md)
+    - [ChromaDB]()
   - LLM
     - [Prompting](./02-dev/04-llm/prompting.md)
     - [OpenAI](./02-dev/04-llm/openai.md)
