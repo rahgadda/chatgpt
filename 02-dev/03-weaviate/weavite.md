@@ -57,3 +57,4 @@
 
 ## Reference
 - [Analyticsvidhya Overview](https://www.analyticsvidhya.com/blog/2022/02/weaviate-towards-the-new-era-of-vector-search-engines/)
+- [Pinecone - What is a Vector Database?](https://www.pinecone.io/learn/vector-database/#:~:text=Vector%20databases%20are%20purpose%2Dbuilt,vector%20embeddings%20in%20production%20scenarios.)
