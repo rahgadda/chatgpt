@@ -8,25 +8,26 @@
 
 ![](./01-images/AI-vs-ML-vs-Deep-Learning.png)
 
+## Modules
+- [Extraction](./02-modules/01-extraction/extraction.md)
+  - CSV
+  - Excel
+  - PDF
+- [Langchain](./02-modules/02-langchain/langchain.md)
+- Vector DB
+  - [FAISS](./02-modules/03-weaviate/faiss.md)
+  - [ChromaDB](./02-modules/03-weaviate/chroma.md)
+  - [Weaviate DB](./02-modules/03-weaviate/weavite.md)
+- LLM
+  - [Prompting](./02-modules/04-llm/prompting.md)
+  - [OpenAI](./02-modules/04-llm/openai.md)
+  - [Huggingface](./02-modules/04-llm/hugginface.md)
+  - [Cohere](./02-modules/04-llm/cohere.md)
+  - [GPT4All](./02-modules/04-llm/gpt4all.md)
+- [Gradio](./02-modules/05-gradio/gradio.md)
+
 ## Examples
 - As part of this demo we will try to create an example to help ChatGPT to provide information about Customer 360 for Underwriter.
-  - [Extraction](./02-dev/01-extraction/extraction.md)
-    - CSV
-    - Excel
-    - PDF
-  - [Langchain](./02-dev/02-langchain/langchain.md)
-  - Vector DB
-    - [FAISS](./02-dev/03-weaviate/faiss.md)
-    - [ChromaDB](./02-dev/03-weaviate/chroma.md)
-    - [Weaviate DB](./02-dev/03-weaviate/weavite.md)
-  - LLM
-    - [Prompting](./02-dev/04-llm/prompting.md)
-    - [OpenAI](./02-dev/04-llm/openai.md)
-    - [Huggingface](./02-dev/04-llm/hugginface.md)
-    - [Cohere](./02-dev/04-llm/cohere.md)
-    - [GPT4All](./02-dev/04-llm/gpt4all.md)
-  - [Gradio](./02-dev/05-gradio/gradio.md)
-
   ![](./01-images/DocumentGPT.jpeg)
 
 ## Reference
