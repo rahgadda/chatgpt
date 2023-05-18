@@ -27,8 +27,13 @@
 - [Gradio](./02-modules/05-gradio/gradio.md)
 
 ## Examples
-- As part of this demo we will try to create an example to help ChatGPT to provide information about Customer 360 for Underwriter.
+- Replicate ChatGPT
+- As part of this demo we will try to create an example to help ChatGPT read PDF data and provide details around it.
   ![](./01-images/DocumentGPT.jpeg)
+- Migration Assistence, System will help to provide nearest mattching variable for input provided.
+- WolframAlpha
+- Whisper
+- [](https://huggingface.co/spaces/JavaFXpert/Chat-GPT-LangChain)
 
 ## Reference
 - [Youtube - ChatGPT for YOUR OWN PDF](https://www.youtube.com/watch?v=TLf90ipMzfE)
