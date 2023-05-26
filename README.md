@@ -30,7 +30,7 @@
 - Replicate ChatGPT
 - As part of this demo we will try to create an example to help ChatGPT read PDF data and provide details around it.
   ![](./01-images/DocumentGPT.jpeg)
-- Migration Assistence, System will help to provide nearest mattching variable for input provided.
+- Migration Assistance, System will help to provide nearest matching variable for input provided.
 - WolframAlpha
 - Whisper
 - [Talking Head](https://huggingface.co/spaces/JavaFXpert/Chat-GPT-LangChain)
