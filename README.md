@@ -28,7 +28,7 @@
 
 ## Examples
 - Replicate ChatGPT
-- As part of this demo we will try to create an example to help ChatGPT read PDF data and provide details around it.
+- As part of this demo we will try to create an example to help ChatGPT read PDF data and provide details around it.   
   ![](./01-images/DocumentGPT.jpeg)
 - Migration Assistance, System will help to provide nearest matching variable for input provided.
 - WolframAlpha
