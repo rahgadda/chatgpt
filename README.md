@@ -33,8 +33,7 @@
 - Migration Assistence, System will help to provide nearest mattching variable for input provided.
 - WolframAlpha
 - Whisper
-- Talking Head
-- [](https://huggingface.co/spaces/JavaFXpert/Chat-GPT-LangChain)
+- [Talking Head](https://huggingface.co/spaces/JavaFXpert/Chat-GPT-LangChain)
 
 ## Reference
 - [Youtube - ChatGPT for YOUR OWN PDF](https://www.youtube.com/watch?v=TLf90ipMzfE)
