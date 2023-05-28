@@ -1,4 +1,5 @@
 import gradio as gr
+from weaviate.client import Client
 
 ############################
 ### Variable Declaration ###
@@ -114,12 +115,15 @@ def update_global_variables(ui_api_key, ui_weaviate_url, ui_product_name, ui_pro
 # -- Create Weaviate Connection
 def weaviate_client():
     global client
+    global g_output
 
     try:
-        client = Client(url=weaviate_url, timeout_config=(3.05, 9.1))
+        client = Client(url=g_weaviate_url, timeout_config=(3.05, 9.1))
         print("Weaviate client connected successfully!")
-    except requests.exceptions.ConnectionError:
-        print("Failed to connect to the Weaviate instance.")
+        g_output=g_output+"Weaviate client connected successfully!"
+    except Exception as e:
+        print("Failed to connect to the Weaviate instance."+str(e))
+        raise ValueError('Failed to connect to the Weaviate instance.')
 
 ############################
 ##### Create Product DB ####
@@ -143,12 +147,21 @@ def submit(ui_api_key, ui_weaviate_url, ui_product_name, ui_product_description,
     if ui_api_key != "" or ui_product_name != "" or ui_product_description != "":
         try:
             # Setting Global Variables
+            g_output=">>> 1 - Setting Variables <<<\n"
             print(">>> 1 - Setting Variables <<<")
             update_global_variables(ui_api_key, ui_weaviate_url, ui_product_name, ui_product_description, ui_product_prompt)
-            print(">>> 1 - Completed <<<")
+            g_output=g_output+"\n>>> 1 - Completed <<<\n"
+            print(">>> 1 - Completed <<<\n")
+
+            # Validate Weaviate Connection
+            g_output=g_output+"\n>>> 2 - Validate Weaviate Connection <<<\n"
+            print(">>> 2 - Validate Weaviate Connection <<<")
+            weaviate_client()
+            g_output=g_output+"\n>>> 2 - Completed <<<\n"
+            print(">>> 2 - Completed <<<\n")
         except Exception as e:
             print(">>> Completed Training <<<\n")
-            return "Error -> " + str(e)
+            return g_output+"Error -> " + str(e)
     else:
         print(">>> Completed Training <<<\n")
         g_output="Welcome to Migration Assistance Training Bot !!!\n" \
