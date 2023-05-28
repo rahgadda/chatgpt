@@ -103,7 +103,7 @@ def update_global_variables(ui_api_key, ui_weaviate_url, ui_product_name, ui_pro
         if ui_product_prompt != "":
             print('Setting g_product_prompt - '+ui_product_prompt)
             g_product_prompt=ui_product_prompt
-            g_output=g_output+'Setting g_product_prompt - '+ui_product_prompt
+            g_output=g_output+'\nSetting g_product_prompt - '+ui_product_prompt
         else:
             print("No prompting specified")
             g_output=g_output+'\nNo values set for g_product_prompt'
