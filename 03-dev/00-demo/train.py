@@ -1,4 +1,5 @@
 import re
+import time
 import gradio as gr
 from weaviate.client import Client
 from pypdf import PdfReader
@@ -386,12 +387,31 @@ def delete_um_class():
         print("completed function - delete_um_class")
 
 # -- Create new User Manual Object/Row
-def create_new_um_object():
-    None
+def create_new_um_object(item):
+    global g_client
+    global g_product_name
+
+    print("started function - create_new_um_object")
+    print("Storing UM chunk data into Weaviate")
+
+    data_object = {
+                        "content": item['text'],
+                        'page_no': item['page_no']
+                  }
+    try:
+        # Add the object to Weaviate
+        g_client.data_object.create(data_object, class_name=convert_to_camel_case(str(g_product_name+"_um")),vector=item['embedding'])
+    except Exception as e:
+        print("Error storing UM chunk")
+        raise ValueError(str(e))
+    finally:
+        print("completed function - create_new_um_object")
 
 # -- Extract text from PDF file
 def extract_text_from_pdf(file):
     file_path = file.name
+
+    print("started function - extract_text_from_pdf")
     print("Uploaded pdf location - "+file_path)
 
     # Text Splitter
@@ -402,9 +422,10 @@ def extract_text_from_pdf(file):
     )
 
     # Read the PDF file page by page
+    item = {}
     with open(file_path, "rb") as pdf_file:
         pdf = PdfReader(pdf_file)
-        for page_num, page in enumerate(pdf.pages, start=1):
+        for page_no, page in enumerate(pdf.pages, start=1):
             text = page.extract_text()
 
             # Merge hyphenated words
@@ -415,7 +436,26 @@ def extract_text_from_pdf(file):
 
             # Remove multiple newlines
             text = re.sub(r"\n\s*\n", "\n\n", text)
-            print(page_num)
+            
+            print('Processing Page Content - '+str(page_no))
+
+            if text:
+                # Split the text into smaller chunks
+                chunks = text_splitter.split_text(text)
+
+                # Process each chunk individually
+                for chunk in chunks:
+                    item =  {
+                                'text': chunk,
+                                'embedding': create_openai_embeddings(chunk),
+                                'page_no': page_no
+                            }
+                    
+                    create_new_um_object(item)
+                    
+    
+    print("completed function - extract_text_from_pdf")
+
 
 # -- Process User Manual
 def process_um_data(file):
@@ -466,21 +506,21 @@ def submit(ui_api_key, ui_weaviate_url, ui_product_name, ui_product_description,
             # Setting Global Variables
             g_output=">>> 1 - Setting Variables <<<\n"
             print(">>> 1 - Setting Variables <<<")
-            # update_global_variables(ui_api_key, ui_weaviate_url, ui_product_name, ui_product_description, ui_product_prompt)
+            update_global_variables(ui_api_key, ui_weaviate_url, ui_product_name, ui_product_description, ui_product_prompt)
             g_output=g_output+"\n>>> 1 - Completed <<<\n"
             print(">>> 1 - Completed <<<\n")
 
             # Validate Weaviate Connection
             g_output=g_output+"\n>>> 2 - Validate Weaviate Connection <<<\n"
             print(">>> 2 - Validate Weaviate Connection <<<")
-            # weaviate_client()
+            weaviate_client()
             g_output=g_output+"\n>>> 2 - Completed <<<\n"
             print(">>> 2 - Completed <<<\n")
 
             # Create Product Class & Object
             g_output=g_output+"\n>>> 3 - Create Product Class & Object <<<\n"
             print(">>> 3 - Create Product Class & Object <<<")
-            # add_product_data()
+            add_product_data()
             g_output=g_output+">>> 3 - Completed <<<\n"
             print(">>> 3 - Completed <<<\n")
 
@@ -492,6 +532,7 @@ def submit(ui_api_key, ui_weaviate_url, ui_product_name, ui_product_description,
             print(">>> 4 - Completed <<<\n")
 
         except Exception as e:
+            print("Error -> " + str(e))
             print(">>> Completed Training <<<\n")
             return g_output+"Error -> " + str(e)
     else:
