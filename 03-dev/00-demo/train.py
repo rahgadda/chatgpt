@@ -404,7 +404,7 @@ def extract_text_from_pdf(file):
     # Read the PDF file page by page
     with open(file_path, "rb") as pdf_file:
         pdf = PdfReader(pdf_file)
-        for page in pdf.pages:
+        for page_num, page in enumerate(pdf.pages, start=1):
             text = page.extract_text()
 
             # Merge hyphenated words
@@ -415,7 +415,7 @@ def extract_text_from_pdf(file):
 
             # Remove multiple newlines
             text = re.sub(r"\n\s*\n", "\n\n", text)
-            print(text)
+            print(page_num)
 
 # -- Process User Manual
 def process_um_data(file):
