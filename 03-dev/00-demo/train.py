@@ -1,7 +1,9 @@
+import re
 import gradio as gr
 from weaviate.client import Client
 from pypdf import PdfReader
 from langchain.text_splitter import CharacterTextSplitter
+import tempfile
 
 ############################
 ### Variable Declaration ###
@@ -12,8 +14,8 @@ from langchain.text_splitter import CharacterTextSplitter
 ui_product_name=gr.Textbox(placeholder="Product Name, OFSLL",label="Product Name")
 ui_product_description=gr.Textbox(placeholder="Product Desc, Oracle Financial Lending and Leasing",label="Product Description")
 ui_product_prompt=gr.Textbox(placeholder="Prompt,what {text} w.r.t OFSLL",label="Prompt")
-ui_product_um=gr.UploadButton("Upload User Manual", file_types=[".pdf"])
-ui_product_mapping=gr.UploadButton("Upload Mapping Excel", file_types=[".xlsx"])
+ui_product_um=gr.File(label="Upload User Manual", file_types=[".pdf"])
+ui_product_mapping=gr.File(label="Upload Mapping Excel", file_types=[".xlsx"])
 
 # Env Variables
 ui_api_key=gr.Textbox(placeholder="OpenAI API Key, sk-XXX",label="OpenAI API Key")
@@ -483,8 +485,8 @@ def submit(ui_api_key, ui_weaviate_url, ui_product_name, ui_product_description,
             print(">>> 3 - Completed <<<\n")
 
             # Create UM Class & Object is file is inputted
-            g_output=g_output+"\n>>> 4 - Create Product Class & Object <<<\n"
-            print(">>> 4 - Create Product Class & Object <<<")
+            g_output=g_output+"\n>>> 4 - Create UserManual Class & Object <<<\n"
+            print(">>> 4 - Create UserManual Class & Object <<<")
             process_um_data(ui_product_um)
             g_output=g_output+">>> 4 - Completed <<<\n"
             print(">>> 4 - Completed <<<\n")
@@ -510,6 +512,7 @@ def main():
                         outputs=ui_output,
                         allow_flagging="never"
                     )
+    tempfile.SpooledTemporaryFile = tempfile.TemporaryFile
     interface.launch()
 
 # -- Calling Main Function
