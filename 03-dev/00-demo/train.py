@@ -306,6 +306,26 @@ def process_um_data():
 #### Create Product Map ####
 ############################
 
+# -- Check for Mapping Class/Table
+def create_mapping_class():
+    None
+
+# -- Check for Mapping Object/Row
+def validate_mapping_object_exist():
+    None
+
+# -- Create new Mapping Object/Row
+def create_new_mapping_object():
+    None
+
+# -- Process Mapping Excel Data
+def process_mapping_data():
+    None
+
+############################
+###### Submit Button #######
+############################
+
 # -- On Click of Submit Button in UI
 def submit(ui_api_key, ui_weaviate_url, ui_product_name, ui_product_description, ui_product_prompt, ui_product_um, ui_product_mapping):
     global g_output
