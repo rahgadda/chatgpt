@@ -131,11 +131,28 @@ def convert_to_camel_case(string):
     camel_case_words = [word.capitalize() for word in words]
     return ''.join(camel_case_words)
 
+# -- Create OpenAI Embedding
+def create_openai_embeddings(text):
+    print("Creating embedding for text"+ text)
+
+    # Updating Embedding
+    retry_attempts = 3
+    retry_interval = 65
+
+    # Create OpenAI embeddings
+    for attempt in range(retry_attempts):
+        try:
+            embedding = get_embedding(text, engine="text-embedding-ada-002")
+            return embedding
+        except Exception as e:
+            time.sleep(retry_interval)
+            print(str(e))
+
 ############################
 ##### Create Product DB ####
 ############################
 
-# -- Check for Product Table
+# -- Check for Product Class/Table
 def create_product_class():
     global g_client
     global g_output
@@ -184,7 +201,7 @@ def create_product_class():
     finally:
         print("completed function - create_product_class")
 
-# -- Check for Product Object
+# -- Check for Product Object/Row
 def validate_product_object_exist():
     global g_client
     global g_product_name
@@ -216,7 +233,7 @@ def validate_product_object_exist():
         print("completed function - validate_product_object_exist")
         return False
 
-# -- Create new Product Object
+# -- Create new Product Object/Row
 def create_new_product_object():
     global g_client
     global g_product_name
@@ -241,7 +258,7 @@ def create_new_product_object():
     finally:
         print("completed function - create_new_product_object")
 
-# -- Add Product Object
+# -- Add Product Object/Row
 def add_product_data():
     global g_product_name
     global g_product_description
@@ -269,7 +286,21 @@ def add_product_data():
 ##### Create Product UM ####
 ############################
 
+# -- Check for User Manual Class/Table
+def create_um_class():
+    None
 
+# -- Check for User Manual Object/Row
+def validate_um_object_exist():
+    None
+
+# -- Create new User Manual Object/Row
+def create_new_um_object():
+    None
+
+# -- Process User Manual
+def process_um_data():
+    None
 
 ############################
 #### Create Product Map ####
