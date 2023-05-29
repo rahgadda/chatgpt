@@ -125,6 +125,12 @@ def weaviate_client():
         print("Failed to connect to the Weaviate instance."+str(e))
         raise ValueError('Failed to connect to the Weaviate instance.')
 
+# -- Convert input to CamelCase
+def convert_to_camel_case(string):
+    words = string.split('_')
+    camel_case_words = [word.capitalize() for word in words]
+    return ''.join(camel_case_words)
+
 ############################
 ##### Create Product DB ####
 ############################
@@ -262,6 +268,8 @@ def add_product_data():
 ############################
 ##### Create Product UM ####
 ############################
+
+
 
 ############################
 #### Create Product Map ####
