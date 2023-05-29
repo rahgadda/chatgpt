@@ -1,2 +1,4 @@
 gradio
 weaviate-client
+pypdf
+langchain

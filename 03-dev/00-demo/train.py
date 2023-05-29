@@ -1,5 +1,7 @@
 import gradio as gr
 from weaviate.client import Client
+from pypdf import PdfReader
+from langchain.text_splitter import CharacterTextSplitter
 
 ############################
 ### Variable Declaration ###
@@ -198,6 +200,7 @@ def create_product_class():
     except Exception as e:
         g_output=g_output+f"Failed to create class 'Product': {e}"+"\n"
         print(f"Failed to create class 'Product': {e}")
+        raise ValueError(str(e))
     finally:
         print("completed function - create_product_class")
 
@@ -288,19 +291,142 @@ def add_product_data():
 
 # -- Check for User Manual Class/Table
 def create_um_class():
-    None
+    global g_product_name
+    global g_client
+    global g_output
+
+    print("started function - create_um_class")
+    product_class_name_camel_case = convert_to_camel_case(str(g_product_name+"_um"))
+    print("Creating UM Artefact of "+product_class_name_camel_case)
+
+    # Define the class with `ProductUm` to store user manual details
+    product_um =    {
+                        "classes": [{
+                            "class": product_class_name_camel_case,
+                            "description": "Vector store of "+g_product_name+" user manual",
+                            "vectorizer": "none",
+                            "properties": [
+                                {
+                                    "name": "content",
+                                    "dataType": ["text"],
+                                    "description": "Store product "+g_product_name+" user manual details"
+                                },
+                                {
+                                    "name": "page_no",
+                                    "dataType": ["int"],
+                                    "description": "Page number in user manual details"
+                                }  
+                            ]
+                        }]
+                    }
+    
+    # Create the class in Weaviate
+    try:
+        response = g_client.schema.create(product_um)
+        g_output=g_output+"Class '"+product_class_name_camel_case+"' created successfully!\n"
+        print("Class '"+str(product_um)+"' created successfully!")
+    except Exception as e:
+        g_output=g_output+f"Failed to create class '"+str(product_um)+"': {e}"+"\n"
+        print(f"Failed to create class '"+str(product_um)+"': {e}")
+        raise ValueError(str(e))
+    finally:
+        print("completed function - create_um_class")
 
 # -- Check for User Manual Object/Row
 def validate_um_object_exist():
-    None
+    global g_client
+    global g_product_name
+    global g_output
+    return_val=False
+
+    print("started function - validate_um_object_exist")
+    product_class_name_camel_case = convert_to_camel_case(str(g_product_name+"_um"))
+
+    try:
+        schema = g_client.schema.get()
+        classes = schema['classes']
+
+        # Check if the class exists in the schema
+        if any(cls['class'] == product_class_name_camel_case for cls in classes):
+            g_output=g_output+"Class "+product_class_name_camel_case+" exists in Weaviate.\n"
+            print("Class "+product_class_name_camel_case+" exists in Weaviate.")
+            return_val = True
+        else:
+            g_output=g_output+"Class "+product_class_name_camel_case+" does not exists in Weaviate.\n"
+            print("Class "+product_class_name_camel_case+" does not exist in Weaviate.")
+
+    except Exception as e:
+        g_output=g_output+f"Failed to retrieve schema: {e}"+"\n"
+        print(f"Failed to retrieve schema: {e}"+"\n")
+        raise ValueError(str(e))
+    finally:
+        print("completed function - validate_um_object_exist")
+        return return_val
+
+# -- Delete User Manual Class/Table
+def delete_um_class():
+    global g_client
+    global g_product_name
+    global g_output
+
+    print("started function - delete_um_class")
+    product_class_name_camel_case = convert_to_camel_case(str(g_product_name+"_um"))
+
+    try:
+        g_client.schema.delete_class(product_class_name_camel_case)
+        print("Class "+product_class_name_camel_case+" deleted successfully.")
+        g_output=g_output+"Class "+product_class_name_camel_case+" deleted successfully.\n"
+    except Exception as e:
+        print(f"Failed to delete class: {e}")
+        g_output=g_output+f"Failed to delete class: {e}"+"\n"
+        raise ValueError(str(e))
+    finally:
+        print("completed function - delete_um_class")
 
 # -- Create new User Manual Object/Row
 def create_new_um_object():
     None
 
+# -- Extract text from PDF file
+def extract_text_from_pdf(file):
+    file_path = file.name
+    print("Uploaded pdf location - "+file_path)
+
+    # Text Splitter
+    text_splitter = CharacterTextSplitter(    
+        chunk_size = 3500,
+        chunk_overlap  = 0,
+        length_function = len,
+    )
+
+    # Read the PDF file page by page
+    with open(file_path, "rb") as pdf_file:
+        pdf = PdfReader(pdf_file)
+        for page in pdf.pages:
+            text = page.extract_text()
+
+            # Merge hyphenated words
+            text = re.sub(r"(\w+)-\n(\w+)", r"\1\2", text)
+
+            # Fix newlines in the middle of sentences
+            text = re.sub(r"(?<!\n\s)\n(?!\s\n)", " ", text.strip())
+
+            # Remove multiple newlines
+            text = re.sub(r"\n\s*\n", "\n\n", text)
+            print(text)
+
 # -- Process User Manual
-def process_um_data():
-    None
+def process_um_data(file):
+    
+    # If um table/class exists, system will delete and recreate
+    # if validate_um_object_exist():
+    #     delete_um_class()
+    # else:    
+    #     create_um_class()
+
+    extract_text_from_pdf(file)
+
+
 
 ############################
 #### Create Product Map ####
@@ -338,23 +464,30 @@ def submit(ui_api_key, ui_weaviate_url, ui_product_name, ui_product_description,
             # Setting Global Variables
             g_output=">>> 1 - Setting Variables <<<\n"
             print(">>> 1 - Setting Variables <<<")
-            update_global_variables(ui_api_key, ui_weaviate_url, ui_product_name, ui_product_description, ui_product_prompt)
+            # update_global_variables(ui_api_key, ui_weaviate_url, ui_product_name, ui_product_description, ui_product_prompt)
             g_output=g_output+"\n>>> 1 - Completed <<<\n"
             print(">>> 1 - Completed <<<\n")
 
             # Validate Weaviate Connection
             g_output=g_output+"\n>>> 2 - Validate Weaviate Connection <<<\n"
             print(">>> 2 - Validate Weaviate Connection <<<")
-            weaviate_client()
+            # weaviate_client()
             g_output=g_output+"\n>>> 2 - Completed <<<\n"
             print(">>> 2 - Completed <<<\n")
 
             # Create Product Class & Object
             g_output=g_output+"\n>>> 3 - Create Product Class & Object <<<\n"
             print(">>> 3 - Create Product Class & Object <<<")
-            add_product_data()
+            # add_product_data()
             g_output=g_output+">>> 3 - Completed <<<\n"
             print(">>> 3 - Completed <<<\n")
+
+            # Create UM Class & Object is file is inputted
+            g_output=g_output+"\n>>> 4 - Create Product Class & Object <<<\n"
+            print(">>> 4 - Create Product Class & Object <<<")
+            process_um_data(ui_product_um)
+            g_output=g_output+">>> 4 - Completed <<<\n"
+            print(">>> 4 - Completed <<<\n")
 
         except Exception as e:
             print(">>> Completed Training <<<\n")
