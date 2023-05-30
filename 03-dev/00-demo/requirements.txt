@@ -2,3 +2,9 @@ gradio
 weaviate-client
 pypdf
 langchain
+openai
+plotly
+pandas
+scikit-learn
+openpyxl
+bs4
