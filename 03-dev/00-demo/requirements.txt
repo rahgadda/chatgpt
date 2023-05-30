@@ -1,4 +1,4 @@
-gradio
+gradio==3.30.0
 weaviate-client
 pypdf
 langchain
