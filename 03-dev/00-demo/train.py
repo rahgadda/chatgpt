@@ -744,8 +744,9 @@ def main():
                         outputs=ui_output,
                         allow_flagging="never"
                     )
+    
     tempfile.SpooledTemporaryFile = tempfile.TemporaryFile
-    interface.launch()
+    interface.queue().launch()
 
 # -- Calling Main Function
 if __name__ == '__main__':
