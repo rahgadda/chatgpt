@@ -126,6 +126,7 @@ def update_global_variables(ui_api_key, ui_weaviate_url, ui_product_name, ui_pro
 def weaviate_client():
     global g_client
     global g_output
+    global g_weaviate_url
 
     try:
         g_client = Client(url=g_weaviate_url, timeout_config=(3.05, 9.1))

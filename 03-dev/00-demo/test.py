@@ -1,7 +1,7 @@
 import gradio as gr
 
 
-def greet(textbox: gr.Textbox,chatbot):
+def greet(textbox,chatbot):
     chatbot.append((textbox,"Hello "+textbox))
     return chatbot,""
 

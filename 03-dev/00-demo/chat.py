@@ -1,5 +1,8 @@
 import gradio as gr
 import tempfile
+import openai
+from openai.embeddings_utils import get_embedding
+from weaviate.client import Client
 
 ############################
 ### Variable Declaration ###
@@ -10,40 +13,45 @@ g_product_details={}
 g_client=None
 g_weaviate_url=""
 g_openai_api_key=""
+openai
 
-def update_global_variables(ui_api_key,ui_weaviate_url,chatbot,txt):
+def update_global_variables(ui_api_key,ui_weaviate_url,chatbot):
     global g_openai_api_key
-    global g_weaviate_url    
+    global g_weaviate_url 
+    global openai   
 
     # Reset values to defaults
     g_openai_api_key=""
     g_weaviate_url=""
-    chatbot=[]
-    chatbot.append(">>> Updating Parameters <<<\n")
+    chatbot.clear()
 
-    try:
-        # Setting g_openai_api_key
-        if ui_api_key != "":
-            print('Setting g_openai_api_key - '+ui_api_key)
-            g_openai_api_key=ui_api_key
-            openai.api_key=g_openai_api_key
-            chatbot.append('Setting g_openai_api_key - '+ui_api_key+"\n")
-        else:
-            print("exception in function - update_global_variables")
-            chatbot.append('Required OpenAI API Key \n')
+    # Loading global variables
+    chatbot.append((None,"Loading Parameters, API Key & Weaviate URL"))
+    
+    # Validation for OpenAI Key
+    if ui_api_key != "":
+        print('Setting g_openai_api_key - '+ui_api_key)
+        g_openai_api_key=ui_api_key
+        openai=g_openai_api_key
+        chatbot.append((None,"Updated OpenAI API Key"))
+    else:
+        print('Required OpenAI API Key')
+        chatbot.append((None,"<b style='color:red'>Required OpenAI API Key</b>"))
 
-        # Setting g_weaviate_url
-        if ui_weaviate_url != "":
-            print('Setting g_weaviate_url - '+ui_weaviate_url)
-            g_weaviate_url=ui_weaviate_url
-            chatbot.append('Setting g_weaviate_url - '+ui_weaviate_url+"\n")
-        else:
-            print("exception in function - update_global_variables")
-            chatbot.append('Required Weaviate VectorDB URL\n')
-    finally:
-        print("completed function - update_global_variables")
-        chatbot.append(">>> Completed Parameters Update <<<\n")
-        return chatbot
+    # Validation for Weaviate URL
+    if ui_weaviate_url != "":
+        print('Setting g_weaviate_url - '+ui_weaviate_url)
+        g_weaviate_url=ui_weaviate_url
+        weaviate_client()
+        chatbot.append((None,"Updated Weaviate URL"))
+    else:
+        print('Required Weaviate URL')
+        chatbot.append((None,"<b style='color:red'>Required Weaviate URL</b>"))
+
+    # Load Product Details
+    update_products_list()
+
+    return chatbot
 
 ############################
 ###### Generic Code #######
@@ -52,17 +60,14 @@ def update_global_variables(ui_api_key,ui_weaviate_url,chatbot,txt):
 # -- Create Weaviate Connection
 def weaviate_client():
     global g_client
-    global g_output
+    global g_weaviate_url
 
     try:
         g_client = Client(url=g_weaviate_url, timeout_config=(3.05, 9.1))
         print("Weaviate client connected successfully!")
-        g_output=g_output+"Weaviate client connected successfully!"
     except Exception as e:
         print("Failed to connect to the Weaviate instance."+str(e))
         raise ValueError('Failed to connect to the Weaviate instance.')
-    finally:
-        return g_output
 
 # -- Convert input to CamelCase
 def convert_to_camel_case(string):
@@ -91,9 +96,22 @@ def create_openai_embeddings(text):
 ##### Search Product DB ####
 ############################
 
+# -- Get Product Codes in Lov
 def update_products_list():
+    global g_client
+    global g_product_details
+
     print("started function - update_products_list")
-    print("completed function - update_products_list")
+
+    try:
+        api_response = g_client.query.get("Product", ["name","description","um_indicator"]).do()
+        g_product_details = api_response['data']['Get']['Product']
+        print("Product API Response")
+        print(g_product_details)
+    except Exception as e:
+        print("Error getting Product Details")
+    finally:
+        print("completed function - update_products_list")
 
 # -- Start of Program - Main
 def main():
@@ -120,14 +138,16 @@ def main():
             with gr.Column(scale=0.6):
                 txt = gr.Textbox(
                     show_label=False,
+                    interactive=True,
                     lines=3.2,
                     placeholder="Message me, I am your migration assistance",
                 ).style(container=False)
             
+            # Loading global variables
             action_dropdown.change(
                                     fn=update_global_variables,
-                                    inputs=[ui_api_key,ui_weaviate_url,chatbot,txt],
-                                    outputs=[chatbot,txt]
+                                    inputs=[ui_api_key,ui_weaviate_url,chatbot],
+                                    outputs=[chatbot]
                                   )
     
     demo.queue().launch(server_name="0.0.0.0")
