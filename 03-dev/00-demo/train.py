@@ -667,8 +667,8 @@ def extract_text_from_xlsx(file):
 def process_mapping_data(file):
     
     # If um table/class exists, system will delete and recreate
-    if validate_mapping_object_exist():
-        delete_mapping_class()
+    # if validate_mapping_object_exist():
+    #     delete_mapping_class()
 
     if not(validate_mapping_object_exist()):
         create_mapping_class()
