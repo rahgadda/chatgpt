@@ -3,6 +3,7 @@ import tempfile
 import openai
 from openai.embeddings_utils import get_embedding
 from weaviate.client import Client
+import time
 
 ############################
 ### Variable Declaration ###
@@ -23,36 +24,45 @@ def update_global_variables(ui_api_key,ui_weaviate_url,ui_chatbot):
     # Reset values to defaults
     g_openai_api_key=""
     g_weaviate_url=""
+    ui_product_dropdown=gr.Dropdown.update(
+                                            interactive=False
+                                          )
     ui_chatbot.clear()
 
     # Loading global variables
     ui_chatbot.append((None,"Loading Parameters, API Key & Weaviate URL"))
     
-    # Validation for OpenAI Key
-    if ui_api_key != "":
-        print('Setting g_openai_api_key - '+ui_api_key)
-        g_openai_api_key=ui_api_key
-        openai=g_openai_api_key
-        ui_chatbot.append((None,"Updated OpenAI API Key"))
-    else:
-        print('Required OpenAI API Key')
-        ui_chatbot.append((None,"<b style='color:red'>Required OpenAI API Key</b>"))
+    try:
+        # Validation for OpenAI Key
+        if ui_api_key != "":
+            print('Setting g_openai_api_key - '+ui_api_key)
+            g_openai_api_key=ui_api_key
+            openai.api_key=g_openai_api_key
+            ui_chatbot.append((None,"Updated OpenAI API Key"))
+        else:
+            print('Required OpenAI API Key')
+            ui_chatbot.append((None,"<b style='color:red'>Required OpenAI API Key</b>"))
 
-    # Validation for Weaviate URL
-    if ui_weaviate_url != "":
-        print('Setting g_weaviate_url - '+ui_weaviate_url)
-        g_weaviate_url=ui_weaviate_url
-        weaviate_client()
-        ui_chatbot.append((None,"Updated Weaviate URL"))
-    else:
-        print('Required Weaviate URL')
-        ui_chatbot.append((None,"<b style='color:red'>Required Weaviate URL</b>"))
+        # Validation for Weaviate URL
+        if ui_weaviate_url != "":
+            print('Setting g_weaviate_url - '+ui_weaviate_url)
+            g_weaviate_url=ui_weaviate_url
+            weaviate_client()
+            ui_chatbot.append((None,"Updated Weaviate URL"))
+            
+            # Load Product Details
+            update_products_variable()
+            ui_product_dropdown = update_products_lov()
+        else:
+            print('Required Weaviate URL')
+            ui_chatbot.append((None,"<b style='color:red'>Required Weaviate URL</b>"))
 
-    # Load Product Details
-    update_products_variable()
-    ui_product_dropdown = update_products_lov()
-
-    return ui_chatbot,ui_product_dropdown
+    except Exception as e:
+        print('Exception in loading parameters - '+str(e))
+        ui_chatbot.append((None,"<b style='color:red'>Exception "+str(e)+"</b>"))
+        raise ValueError(str(e))
+    finally:
+        return ui_chatbot,ui_product_dropdown
 
 ############################
 ###### Generic Code #######
@@ -78,7 +88,7 @@ def convert_to_camel_case(string):
 
 # -- Create OpenAI Embedding
 def create_openai_embeddings(text):
-    # print("Creating embedding for text"+ text)
+    global openai
 
     # Updating Embedding
     retry_attempts = 3
@@ -87,14 +97,19 @@ def create_openai_embeddings(text):
     # Create OpenAI embeddings
     for attempt in range(retry_attempts):
         try:
-            embedding = get_embedding(text, engine="text-embedding-ada-002")
+            embedding = openai.embeddings_utils.get_embedding(text, engine="text-embedding-ada-002")
             return embedding
         except Exception as e:
-            time.sleep(retry_interval)
-            print(str(e))
+            if "AuthenticationError" in str(e):
+                raise ValueError("Creating Text Embedding")
+            else:
+                time.sleep(retry_interval)
+                print(str(e))
+    
+    raise ValueError("Creating Text Embedding")
 
 ############################
-##### Search Product DB ####
+## Update Product Details ##
 ############################
 
 # -- Update Product LOV
@@ -111,7 +126,6 @@ def update_products_lov():
     print("completed function - update_products_lov")
 
     return ui_product_dropdown
-
 
 # -- Get Product global variable
 def update_products_variable():
@@ -134,6 +148,70 @@ def update_products_variable():
         print("completed function - update_products_variable")
 
 ############################
+#### Search User Manual ####
+############################
+
+def search_um(ui_search_text, ui_product_dropdown):
+    um_data = "No results from User Manual"
+    
+    print("started function - search_um")
+    print("Product Selected -->"+ui_product_dropdown)
+    
+    try:
+
+        if ui_product_dropdown:
+            input_embedding=create_openai_embeddings(ui_search_text)
+            vector = {"vector": input_embedding}
+
+            response = g_client \
+                .query.get(convert_to_camel_case(ui_product_dropdown+"_um"), ["content", "_additional {certainty}"]) \
+                .with_near_vector(vector) \
+                .with_limit(1) \
+                .do()
+            
+            # print(result)
+            if response:
+                result = response['data']['Get'][convert_to_camel_case(ui_product_dropdown+"_um")][0]['content']
+                result_value = result.split('\nResult : ')[0]
+                um_data = result_value
+        else:
+            um_data = "Please select product name to proceed"
+
+        return um_data
+
+    except Exception as e:
+        raise ValueError(str(e))
+    finally:
+        print("completed function - search_um")
+
+############################
+#### Search Mapping Data ###
+############################
+
+############################
+##### Search User Input ####
+############################
+
+def text_search(ui_product_dropdown, ui_search_text, ui_chatbot):
+    print("started function - text_search")
+    try:
+        um_search_results = search_um(ui_search_text, ui_product_dropdown)
+        ui_chatbot.append((ui_search_text,None))
+        ui_chatbot.append((None,um_search_results))
+    except Exception as e:
+        ui_chatbot.append((None,"<b style='color:red'>Exception "+str(e)+"</b>"))
+    finally:
+        print("completed function - text_search")
+        return ui_chatbot
+
+############################
+##### Upload User Input ####
+############################
+
+def excel_file_search():
+    None
+
+############################
 ####### Main Program #######
 ############################
 
@@ -143,8 +221,8 @@ def main():
 
     with gr.Blocks() as demo:
         with gr.Accordion("Settings"):
-            ui_api_key=gr.Textbox(placeholder="OpenAI API Key, sk-XXX",label="OpenAI API Key")
-            ui_weaviate_url=gr.Textbox(placeholder="Weaviate URL, https://weaviate.xxx",label="Weaviate URL")
+            ui_api_key=gr.Textbox(placeholder="OpenAI API Key, sk-XXX",label="OpenAI API Key", type="password")
+            ui_weaviate_url=gr.Textbox(placeholder="Weaviate URL, https://weaviate.xxx",label="Weaviate URL", type="password")
 
         ui_chatbot = gr.Chatbot([], elem_id="chatbot").style(height=450)
 
@@ -157,28 +235,30 @@ def main():
             with gr.Column(scale=0.2, min_width=0):
                 ui_product_dropdown = gr.Dropdown(
                     [],
-                    interactive=True,
+                    interactive=False,
                     label="Select Product"
                 )
             with gr.Column(scale=0.6):
-                ui_search_txt = gr.Textbox(
+                ui_search_text = gr.Textbox(
                     show_label=False,
-                    interactive=True,
-                    lines=3.2,
+                    # lines=3.2,
                     placeholder="Message me, I am your migration assistance",
-                ).style(container=False)
-            
+                )
+
             # Loading global variables
             ui_action_dropdown.change(
                                     fn=update_global_variables,
                                     inputs=[ui_api_key,ui_weaviate_url,ui_chatbot],
                                     outputs=[ui_chatbot,ui_product_dropdown]
-                                  )
+                                )
 
-            # Load Product LOV
-
-    
-    demo.queue().launch(server_name="0.0.0.0")
+            # Search Text
+            ui_search_text.submit(fn=text_search,
+                                inputs=[ui_product_dropdown, ui_search_text, ui_chatbot],
+                                outputs=[ui_chatbot]
+                                )
+            
+    demo.launch(server_name="0.0.0.0")
 
 # -- Calling Main Function
 if __name__ == '__main__':
