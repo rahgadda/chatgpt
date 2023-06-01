@@ -4,6 +4,10 @@ import openai
 from openai.embeddings_utils import get_embedding
 from weaviate.client import Client
 import time
+import pandas as pd
+from openpyxl import Workbook
+from openpyxl.utils.dataframe import dataframe_to_rows
+import tempfile
 
 ############################
 ### Variable Declaration ###
@@ -275,6 +279,7 @@ def text_search(ui_product_dropdown, ui_search_text, ui_chatbot):
         
         ui_chatbot.append((None,"<b style='color:green'>Mapping Results: </b><br>"+convert_to_html_table(mapping_search_results)+"<b style='color:green'>User Manual Search Results: </b><br>"+um_search_results))
     except Exception as e:
+        print('Exception '+str(e))
         ui_chatbot.append((None,"<b style='color:red'>Exception "+str(e)+"</b>"))
     finally:
         print("completed function - text_search")
@@ -287,13 +292,88 @@ def text_search(ui_product_dropdown, ui_search_text, ui_chatbot):
 def excel_file_search(ui_product_dropdown, ui_excel_upload, ui_chatbot):
     print("started function - excel_file_search")
 
+    # Create an empty list to store the items
+    items=[]
+    output_file_path=""
+
     try:
-        None
+        file_path = ui_excel_upload.name
+        print("Uploaded xlsx location - "+file_path)
+
+        # Read the Excel file
+        xls = pd.ExcelFile(file_path)
+
+        # Iterate over each sheet in the Excel file
+        for sheet_name in xls.sheet_names:
+            
+            # Read the sheet into a DataFrame
+            df = pd.read_excel(xls, sheet_name=sheet_name)
+            
+             # Iterate over each input value in the 'Input' column
+            for input_value in df['Input']:
+                # Create mapping search for each input
+                mapping_search_results = search_mapping_data(input_value, ui_product_dropdown)
+
+                # Create a dictionary item for the sheet
+                item = {
+                    'sheet': sheet_name,
+                    'input': input_value,
+                    'key': mapping_search_results['key'],
+                    'description': mapping_search_results['description'],
+                    'certainty': mapping_search_results['certainty']
+                }
+
+                print('key: ' + item['key'])
+                print('sheet: ' + item['sheet'])
+                print('input: ' + item['input'])
+                print('description: ' + item['description'])
+                print('certainty: ' + str(item['certainty']))
+
+                # Append the item to the list
+                items.append(item)
+        
+        # Creating xlsx file
+        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.xlsx', newline='\n') as temp_file:
+            # Create a Pandas DataFrame from the items list
+            df_items = pd.DataFrame(items)
+
+            # Create a new Workbook object
+            workbook = Workbook()
+
+            # Iterate over each sheet in the DataFrame
+            for sheet_name in df_items['sheet'].unique():
+                # Filter the DataFrame for the current sheet
+                df_sheet = df_items[df_items['sheet'] == sheet_name]
+                
+                # Select only the 'key', 'description', and 'certainty' columns
+                df_sheet = df_sheet[['input','key', 'description', 'certainty']]
+                
+                # Create a new sheet in the workbook
+                sheet = workbook.create_sheet(title=sheet_name)
+                
+                # Write the DataFrame to the sheet
+                for row in dataframe_to_rows(df_sheet, index=False, header=True):
+                    sheet.append(row)
+
+            # Remove the default sheet created by openpyxl
+            del workbook["Sheet"]
+
+            # Save the Excel file
+            workbook.save(temp_file.name)
+
+        print("File Processing Completed - "+str(temp_file.name))
+        output_file_path=gr.File.update(    visible=True,
+                                            value=str(temp_file.name),
+                                            interactive=True
+                                        )
+        ui_chatbot.append((None, "File Processing Completed - "+str(temp_file.name)))
+
     except Exception as e:
+        print('Exception '+str(e))
         ui_chatbot.append((None,"<b style='color:red'>Exception "+str(e)+"</b>"))
     finally:
         print("completed function - excel_file_search")
-        return ui_chatbot
+        return ui_chatbot, output_file_path
 
 ############################
 ####### Main Program #######
@@ -313,7 +393,7 @@ def main():
         with gr.Row():
             with gr.Column(scale=0.2, min_width=0):
                 ui_action_dropdown = gr.Dropdown(
-                    ["Query","Update"],
+                    ["Query","Update","Delete"],
                     label="Action Type"
                 )
             with gr.Column(scale=0.2, min_width=0):
@@ -328,19 +408,28 @@ def main():
                     # lines=3.2,
                     placeholder="Message me, I am your migration assistance",
                 )
+            
+        ui_upload_excel = gr.UploadButton("Upload Mapping File", file_types=["*.xlsx"])
+        ui_download_excel = gr.File(label="Download Recommendations", interactive=False, visible=False)
 
-            # Loading global variables
-            ui_action_dropdown.change(
+        # Loading global variables
+        ui_action_dropdown.change(
                                     fn=update_global_variables,
                                     inputs=[ui_api_key,ui_weaviate_url,ui_chatbot],
                                     outputs=[ui_chatbot,ui_product_dropdown]
                                 )
 
-            # Search Text
-            ui_search_text.submit(fn=text_search,
-                                inputs=[ui_product_dropdown, ui_search_text, ui_chatbot],
-                                outputs=[ui_chatbot]
-                                )
+        # Search Text
+        ui_search_text.submit(fn=text_search,
+                            inputs=[ui_product_dropdown, ui_search_text, ui_chatbot],
+                            outputs=[ui_chatbot]
+                            )
+        
+        # Upload Mapping
+        ui_upload_excel.upload(fn=excel_file_search,
+                               inputs=[ui_product_dropdown, ui_upload_excel, ui_chatbot],
+                               outputs=[ui_chatbot,ui_download_excel]
+                              )
             
     demo.launch(server_name="0.0.0.0")
 

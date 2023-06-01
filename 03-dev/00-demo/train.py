@@ -637,7 +637,7 @@ def extract_text_from_xlsx(file):
             hints = df['Hint'].tolist()
 
             # Combine the values and add them to the dictionary
-            combined_values.update({f"{sheet_name}.{column_names}": f"{column_names} {hint}" for column_names, hint in zip(column_names, hints)})
+            combined_values.update({f"{sheet_name}.{column_names}": f"{hint}" for column_names, hint in zip(column_names, hints)})
 
         # Print the combined values
         item={}
