@@ -104,10 +104,13 @@ def update_products_list():
     print("started function - update_products_list")
 
     try:
-        api_response = g_client.query.get("Product", ["name","description","um_indicator"]).do()
-        g_product_details = api_response['data']['Get']['Product']
+        api_response = g_client.query.get("Product", ["name","description"]).do()
         print("Product API Response")
-        print(g_product_details)
+        print(api_response)
+        g_product_details = api_response['data']['Get']['Product']
+        product_details = [d["name"] for d in g_product_details]
+        print("Product API Response")
+        print(product_details)
     except Exception as e:
         print("Error getting Product Details")
     finally:
