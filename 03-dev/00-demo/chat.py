@@ -284,8 +284,16 @@ def text_search(ui_product_dropdown, ui_search_text, ui_chatbot):
 ##### Upload User Input ####
 ############################
 
-def excel_file_search():
-    None
+def excel_file_search(ui_product_dropdown, ui_excel_upload, ui_chatbot):
+    print("started function - excel_file_search")
+
+    try:
+        None
+    except Exception as e:
+        ui_chatbot.append((None,"<b style='color:red'>Exception "+str(e)+"</b>"))
+    finally:
+        print("completed function - excel_file_search")
+        return ui_chatbot
 
 ############################
 ####### Main Program #######
