@@ -15,7 +15,7 @@ g_weaviate_url=""
 g_openai_api_key=""
 openai
 
-def update_global_variables(ui_api_key,ui_weaviate_url,chatbot):
+def update_global_variables(ui_api_key,ui_weaviate_url,ui_chatbot):
     global g_openai_api_key
     global g_weaviate_url 
     global openai   
@@ -23,35 +23,36 @@ def update_global_variables(ui_api_key,ui_weaviate_url,chatbot):
     # Reset values to defaults
     g_openai_api_key=""
     g_weaviate_url=""
-    chatbot.clear()
+    ui_chatbot.clear()
 
     # Loading global variables
-    chatbot.append((None,"Loading Parameters, API Key & Weaviate URL"))
+    ui_chatbot.append((None,"Loading Parameters, API Key & Weaviate URL"))
     
     # Validation for OpenAI Key
     if ui_api_key != "":
         print('Setting g_openai_api_key - '+ui_api_key)
         g_openai_api_key=ui_api_key
         openai=g_openai_api_key
-        chatbot.append((None,"Updated OpenAI API Key"))
+        ui_chatbot.append((None,"Updated OpenAI API Key"))
     else:
         print('Required OpenAI API Key')
-        chatbot.append((None,"<b style='color:red'>Required OpenAI API Key</b>"))
+        ui_chatbot.append((None,"<b style='color:red'>Required OpenAI API Key</b>"))
 
     # Validation for Weaviate URL
     if ui_weaviate_url != "":
         print('Setting g_weaviate_url - '+ui_weaviate_url)
         g_weaviate_url=ui_weaviate_url
         weaviate_client()
-        chatbot.append((None,"Updated Weaviate URL"))
+        ui_chatbot.append((None,"Updated Weaviate URL"))
     else:
         print('Required Weaviate URL')
-        chatbot.append((None,"<b style='color:red'>Required Weaviate URL</b>"))
+        ui_chatbot.append((None,"<b style='color:red'>Required Weaviate URL</b>"))
 
     # Load Product Details
-    update_products_list()
+    update_products_variable()
+    ui_product_dropdown = update_products_lov()
 
-    return chatbot
+    return ui_chatbot,ui_product_dropdown
 
 ############################
 ###### Generic Code #######
@@ -96,12 +97,28 @@ def create_openai_embeddings(text):
 ##### Search Product DB ####
 ############################
 
-# -- Get Product Codes in Lov
-def update_products_list():
+# -- Update Product LOV
+def update_products_lov():
+    global g_product_details
+
+    print("started function - update_products_lov")
+    product_details = [d["name"] for d in g_product_details]
+    ui_product_dropdown = gr.Dropdown.update(
+                                                choices=product_details, 
+                                                value=product_details[0],
+                                                interactive=True
+                                            )
+    print("completed function - update_products_lov")
+
+    return ui_product_dropdown
+
+
+# -- Get Product global variable
+def update_products_variable():
     global g_client
     global g_product_details
 
-    print("started function - update_products_list")
+    print("started function - update_products_variable")
 
     try:
         api_response = g_client.query.get("Product", ["name","description"]).do()
@@ -114,7 +131,11 @@ def update_products_list():
     except Exception as e:
         print("Error getting Product Details")
     finally:
-        print("completed function - update_products_list")
+        print("completed function - update_products_variable")
+
+############################
+####### Main Program #######
+############################
 
 # -- Start of Program - Main
 def main():
@@ -125,21 +146,22 @@ def main():
             ui_api_key=gr.Textbox(placeholder="OpenAI API Key, sk-XXX",label="OpenAI API Key")
             ui_weaviate_url=gr.Textbox(placeholder="Weaviate URL, https://weaviate.xxx",label="Weaviate URL")
 
-        chatbot = gr.Chatbot([], elem_id="chatbot").style(height=450)
+        ui_chatbot = gr.Chatbot([], elem_id="chatbot").style(height=450)
 
         with gr.Row():
             with gr.Column(scale=0.2, min_width=0):
-                action_dropdown = gr.Dropdown(
+                ui_action_dropdown = gr.Dropdown(
                     ["Query","Update"],
                     label="Action Type"
                 )
             with gr.Column(scale=0.2, min_width=0):
-                product_dropdown = gr.Dropdown(
-                    ["OFSLL"],
+                ui_product_dropdown = gr.Dropdown(
+                    [],
+                    interactive=True,
                     label="Select Product"
                 )
             with gr.Column(scale=0.6):
-                txt = gr.Textbox(
+                ui_search_txt = gr.Textbox(
                     show_label=False,
                     interactive=True,
                     lines=3.2,
@@ -147,11 +169,14 @@ def main():
                 ).style(container=False)
             
             # Loading global variables
-            action_dropdown.change(
+            ui_action_dropdown.change(
                                     fn=update_global_variables,
-                                    inputs=[ui_api_key,ui_weaviate_url,chatbot],
-                                    outputs=[chatbot]
+                                    inputs=[ui_api_key,ui_weaviate_url,ui_chatbot],
+                                    outputs=[ui_chatbot,ui_product_dropdown]
                                   )
+
+            # Load Product LOV
+
     
     demo.queue().launch(server_name="0.0.0.0")
 
