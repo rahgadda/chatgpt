@@ -488,8 +488,8 @@ def extract_text_from_pdf(file):
 def process_um_data(file):
     
     # If um table/class exists, system will delete and recreate   
-    # if validate_um_object_exist():
-    #     delete_um_class()
+    if validate_um_object_exist():
+        delete_um_class()
     
     if not(validate_um_object_exist()):
         create_um_class()
@@ -646,9 +646,9 @@ def extract_text_from_xlsx(file):
             print(f"Key: {key}")
             print(f"Initial Value: {value}")
 
-            if g_product_prompt != "":
-                value=value+" "+generate_openAI_description(key,g_product_prompt)
-                print(f"Update Value: {value}")
+            # if g_product_prompt != "":
+            #     value=value+" "+generate_openAI_description(key,g_product_prompt)
+            #     print(f"Update Value: {value}")
 
             print("-------------------------")
             item= {
@@ -668,8 +668,8 @@ def extract_text_from_xlsx(file):
 def process_mapping_data(file):
     
     # If um table/class exists, system will delete and recreate
-    # if validate_mapping_object_exist():
-    #     delete_mapping_class()
+    if validate_mapping_object_exist():
+        delete_mapping_class()
 
     if not(validate_mapping_object_exist()):
         create_mapping_class()
