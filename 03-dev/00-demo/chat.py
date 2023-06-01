@@ -266,6 +266,7 @@ def search_mapping_data(ui_search_text, ui_product_dropdown):
 ############################
 
 def text_search(ui_product_dropdown, ui_search_text, ui_chatbot):
+    
     print("started function - text_search")
     try:
         ui_chatbot.append((ui_search_text,None))
