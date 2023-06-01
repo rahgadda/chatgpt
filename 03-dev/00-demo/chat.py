@@ -68,6 +68,28 @@ def update_global_variables(ui_api_key,ui_weaviate_url,ui_chatbot):
 ###### Generic Code #######
 ############################
 
+# -- Generate HTML Table
+def convert_to_html_table(table_data):
+    
+    html_table = f"""
+    <table style="border-collapse: collapse; width: 100%;">
+        <tr>
+            <th style="border: 1px solid black; text-align: center; padding: 8px;">Input</th>
+            <th style="border: 1px solid black; text-align: center; padding: 8px;">Key</th>
+            <th style="border: 1px solid black; text-align: center; padding: 8px;">Description</th>
+            <th style="border: 1px solid black; text-align: center; padding: 8px;">Certainty</th>
+        </tr>
+        <tr>
+            <td style="border: 1px solid black; text-align: center; padding: 8px;">{table_data['input']}</td>
+            <td style="border: 1px solid black; text-align: center; padding: 8px;">{table_data['key']}</td>
+            <td style="border: 1px solid black; text-align: center; padding: 8px;">{table_data['description']}</td>
+            <td style="border: 1px solid black; text-align: center; padding: 8px;">{table_data['certainty']}</td>
+        </tr>
+    </table><br><br>
+    """
+
+    return html_table
+
 # -- Create Weaviate Connection
 def weaviate_client():
     global g_client
@@ -188,6 +210,57 @@ def search_um(ui_search_text, ui_product_dropdown):
 #### Search Mapping Data ###
 ############################
 
+def search_mapping_data(ui_search_text, ui_product_dropdown):
+    um_data = "No results from Mapping Table"
+    
+    print("started function - search_mapping_data")
+    print("Product Selected -->"+ui_product_dropdown)
+    try:
+        print("Performing Semantic Search")
+        if ui_product_dropdown:
+            input_embedding=create_openai_embeddings(ui_search_text)
+            
+            where_product_name = convert_to_camel_case(ui_product_dropdown+"_mapping")
+            vector = {"vector": input_embedding}
+            response = g_client \
+                    .query.get(where_product_name, ["key","description", "_additional {certainty}"]) \
+                    .with_near_vector(vector) \
+                    .with_limit(1) \
+                    .do()
+            
+            # print(result)
+            if response:
+                mapping = response['data']['Get'].get(convert_to_camel_case(ui_product_dropdown+"_mapping"))
+                if mapping:
+                    for item in mapping:
+                        key = item['key']
+                        description = item['description']
+                        certainty = item['_additional']['certainty']
+                        
+                        print("Key:", key)
+                        print("Description:", description)
+                        print("Certainty:", certainty)
+
+                        return {
+                                'input': ui_search_text,
+                                'key':key,
+                                'description': description,
+                                'certainty': certainty
+                            }
+                else:
+                    print("Mapping has no data.")
+                    return {
+                                'input': ui_search_text,
+                                'key': None,
+                                'description': None,
+                                'certainty': None
+                            }
+
+    except Exception as e:
+        raise ValueError(str(e))
+    finally:
+        print("completed function - search_mapping_data")
+    
 ############################
 ##### Search User Input ####
 ############################
@@ -195,9 +268,11 @@ def search_um(ui_search_text, ui_product_dropdown):
 def text_search(ui_product_dropdown, ui_search_text, ui_chatbot):
     print("started function - text_search")
     try:
-        um_search_results = search_um(ui_search_text, ui_product_dropdown)
         ui_chatbot.append((ui_search_text,None))
-        ui_chatbot.append((None,um_search_results))
+        um_search_results = search_um(ui_search_text, ui_product_dropdown)
+        mapping_search_results = search_mapping_data(ui_search_text, ui_product_dropdown)
+        
+        ui_chatbot.append((None,"<b style='color:green'>Mapping Results: </b><br>"+convert_to_html_table(mapping_search_results)+"<b style='color:green'>User Manual Search Results: </b><br>"+um_search_results))
     except Exception as e:
         ui_chatbot.append((None,"<b style='color:red'>Exception "+str(e)+"</b>"))
     finally:
