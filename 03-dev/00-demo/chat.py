@@ -3,6 +3,7 @@ import tempfile
 import openai
 from openai.embeddings_utils import get_embedding
 from weaviate.client import Client
+import weaviate
 import time
 import pandas as pd
 from openpyxl import Workbook
@@ -367,7 +368,6 @@ def search_and_get_object_id_by_key(ui_search_text, ui_product_dropdown):
         print("completed function - search_and_get_object_id_by_key")
         return items 
 
-
 ############################
 #### Update Mapping Data ###
 ############################
@@ -396,7 +396,7 @@ def update_mapping_by_object_id(ui_search_text, ui_product_dropdown):
                        )
 
     except Exception as e:
-        print("Error - "+str(e))
+        print("Update Error - "+str(e))
         raise ValueError(str(e))
     finally:
         print("completed function - update_mapping_by_object_id")
@@ -404,6 +404,25 @@ def update_mapping_by_object_id(ui_search_text, ui_product_dropdown):
 ############################
 #### Delete Mapping Data ###
 ############################
+
+def delete_mapping_by_object_id(ui_search_text, ui_product_dropdown):
+    global g_client
+
+    print("completed function - delete_mapping_by_object_id")
+
+    try:
+        product_name = convert_to_camel_case(ui_product_dropdown+"_mapping")
+        g_client. \
+                data_object.delete(
+                                    ui_search_text,
+                                    class_name=product_name,
+                                    consistency_level=weaviate.data.replication.ConsistencyLevel.ALL
+                                )
+    except Exception as e:
+       print("Delete Error - "+str(e)) 
+       raise ValueError(str(e))
+    finally:
+        print("completed function - delete_mapping_by_object_id")
 
 ############################
 ##### Search User Input ####
@@ -432,6 +451,7 @@ def text_search(ui_action_dropdown, ui_product_dropdown, ui_search_text, ui_chat
         elif ui_action_dropdown == 'Delete':
             print("Starting to Delete")
             ui_chatbot.append(("Deleting: "+ ui_search_text,None))
+            delete_mapping_by_object_id(ui_search_text, ui_product_dropdown)
     except Exception as e:
         print('Exception '+str(e))
         ui_chatbot.append((None,"<b style='color:red'>Exception "+str(e)+"</b>"))
