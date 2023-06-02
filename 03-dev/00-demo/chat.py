@@ -86,8 +86,8 @@ def update_global_variables(ui_action_dropdown, ui_api_key,ui_weaviate_url,ui_ch
 ###### Generic Code #######
 ############################
 
-# -- Generate HTML Table
-def convert_to_html_table(table_data):
+# -- Generate Mapping HTML Table
+def convert_mapping_data_to_html_table(table_data):
     
     html_table = f"""
     <table style="border-collapse: collapse; width: 100%;">
@@ -106,6 +106,29 @@ def convert_to_html_table(table_data):
     </table><br><br>
     """
 
+    return html_table
+
+# -- Generate Object Search HTML Table
+def convert_object_id_data_to_html_table(table_data_items):
+
+    html_table=""
+    for table_data in table_data_items:
+        html_table += f"""
+        <table style="border-collapse: collapse; width: 100%;">
+            <tr>
+                <th style="border: 1px solid black; text-align: center; padding: 8px;">Object ID</th>
+                <th style="border: 1px solid black; text-align: center; padding: 8px;">Key</th>
+                <th style="border: 1px solid black; text-align: center; padding: 8px;">Description</th>
+            </tr>
+            <tr>
+                <td style="border: 1px solid black; text-align: center; padding: 8px;">{table_data['id']}</td>
+                <td style="border: 1px solid black; text-align: center; padding: 8px;">{table_data['key']}</td>
+                <td style="border: 1px solid black; text-align: center; padding: 8px;">{table_data['description']}</td>
+            </tr>
+        </table><br>
+        """
+
+    # print(html_table)
     return html_table
 
 # -- Create Weaviate Connection
@@ -192,6 +215,8 @@ def update_products_variable():
 ############################
 
 def search_um(ui_search_text, ui_product_dropdown):
+    global g_client
+
     um_data = "No results from User Manual"
     
     print("started function - search_um")
@@ -229,8 +254,8 @@ def search_um(ui_search_text, ui_product_dropdown):
 ############################
 
 def search_mapping_data(ui_search_text, ui_product_dropdown):
-    um_data = "No results from Mapping Table"
-    
+    global g_client
+
     print("started function - search_mapping_data")
     print("Product Selected -->"+ui_product_dropdown)
     try:
@@ -278,7 +303,71 @@ def search_mapping_data(ui_search_text, ui_product_dropdown):
         raise ValueError(str(e))
     finally:
         print("completed function - search_mapping_data")
-    
+
+def search_and_get_object_id_by_key(ui_search_text, ui_product_dropdown):
+    global g_client
+    items=[]
+
+    print("started function - search_and_get_object_id_by_key")
+    print("Product Selected -->"+ui_product_dropdown)
+
+    try:
+        print("Performing Normal Search")
+        if ui_product_dropdown:
+             
+             product_name = convert_to_camel_case(ui_product_dropdown+"_mapping")
+             where_filter = {
+                                "path": ["key"],
+                                "operator": "Equal",
+                                "valueString": ui_search_text
+                            }
+             response =  (
+                            g_client.query
+                            .get(product_name, ["key","description"])
+                            .with_where(where_filter)
+                            .with_limit(5)
+                            .with_additional(["id"])
+                            .do()
+                        )
+             print(response)
+
+             if response:
+                mapping = response['data']['Get'].get(product_name)
+                if mapping:
+                    for item in mapping:
+                        id = item['_additional']['id']
+                        key = item['key']
+                        description = item['description']
+                        
+                        print("Id:", id)
+                        print("Key:", key)
+                        print("Description:", description)
+                        item = {
+                                'input': ui_search_text,
+                                'id': id,
+                                'key':key,
+                                'description': description
+                              }
+                        items.append(item)
+                        print("Added Item")
+                else:
+                    print("Mapping has no data.")
+                    item= {
+                                'input': ui_search_text,
+                                'id': None,
+                                'key': None,
+                                'description': None
+                            }
+                    items.append(item)
+
+    except Exception as e:
+        print("Error - "+str(e))
+        raise ValueError(str(e))
+    finally:
+        print("completed function - search_and_get_object_id_by_key")
+        return items 
+
+
 ############################
 ##### Search User Input ####
 ############################
@@ -293,7 +382,12 @@ def text_search(ui_action_dropdown, ui_product_dropdown, ui_search_text, ui_chat
             um_search_results = search_um(ui_search_text, ui_product_dropdown)
             mapping_search_results = search_mapping_data(ui_search_text, ui_product_dropdown)
             
-            ui_chatbot.append((None,"<b style='color:green'>Mapping Results: </b><br>"+convert_to_html_table(mapping_search_results)+"<b style='color:green'>User Manual Search Results: </b><br>"+um_search_results))
+            ui_chatbot.append((None,"<b style='color:green'>Mapping Results: </b><br>"+convert_mapping_data_to_html_table(mapping_search_results)+"<b style='color:green'>User Manual Search Results: </b><br>"+um_search_results))
+        elif ui_action_dropdown == 'Get Object ID':
+            print("Starting to Query Object ID")
+            ui_chatbot.append(("Searching Object ID: "+ ui_search_text,None))
+            search_results = search_and_get_object_id_by_key(ui_search_text, ui_product_dropdown)
+            ui_chatbot.append((None,"<b style='color:green'>Object ID Results: </b><br>"+convert_object_id_data_to_html_table(search_results)))
         elif ui_action_dropdown == 'Update':
             print("Starting to Update")
             ui_chatbot.append(("Updating: "+ ui_search_text,None))
@@ -415,7 +509,7 @@ def main():
         with gr.Row():
             with gr.Column(scale=0.2, min_width=0):
                 ui_action_dropdown = gr.Dropdown(
-                    ["Query","Update","Delete"],
+                    ["Query","Update","Delete","Get Object ID"],
                     label="Action Type"
                 )
             with gr.Column(scale=0.2, min_width=0):
