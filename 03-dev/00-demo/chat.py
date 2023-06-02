@@ -20,7 +20,7 @@ g_weaviate_url=""
 g_openai_api_key=""
 openai
 
-def update_global_variables(ui_api_key,ui_weaviate_url,ui_chatbot):
+def update_global_variables(ui_action_dropdown, ui_api_key,ui_weaviate_url,ui_chatbot,ui_download_excel, ui_upload_excel):
     global g_openai_api_key
     global g_weaviate_url 
     global openai   
@@ -31,6 +31,13 @@ def update_global_variables(ui_api_key,ui_weaviate_url,ui_chatbot):
     ui_product_dropdown=gr.Dropdown.update(
                                             interactive=False
                                           )
+    ui_download_excel = gr.File.update(
+                                           visible=False,
+                                           interactive=False   
+                                      )
+    ui_upload_excel =  gr.UploadButton.update(
+                                                visible=False     
+                                             )        
     ui_chatbot.clear()
 
     # Loading global variables
@@ -61,12 +68,19 @@ def update_global_variables(ui_api_key,ui_weaviate_url,ui_chatbot):
             print('Required Weaviate URL')
             ui_chatbot.append((None,"<b style='color:red'>Required Weaviate URL</b>"))
 
+        # If Action = Query, Enable ui_download_excel
+        if ui_action_dropdown == "Query":
+            ui_upload_excel =  gr.UploadButton.update(
+                                                visible=True,
+                                                interactive=True   
+                                             )   
+
     except Exception as e:
         print('Exception in loading parameters - '+str(e))
         ui_chatbot.append((None,"<b style='color:red'>Exception "+str(e)+"</b>"))
         raise ValueError(str(e))
     finally:
-        return ui_chatbot,ui_product_dropdown
+        return ui_chatbot,ui_product_dropdown,ui_download_excel, ui_upload_excel
 
 ############################
 ###### Generic Code #######
@@ -269,15 +283,23 @@ def search_mapping_data(ui_search_text, ui_product_dropdown):
 ##### Search User Input ####
 ############################
 
-def text_search(ui_product_dropdown, ui_search_text, ui_chatbot):
+def text_search(ui_action_dropdown, ui_product_dropdown, ui_search_text, ui_chatbot):
     
     print("started function - text_search")
     try:
-        ui_chatbot.append((ui_search_text,None))
-        um_search_results = search_um(ui_search_text, ui_product_dropdown)
-        mapping_search_results = search_mapping_data(ui_search_text, ui_product_dropdown)
-        
-        ui_chatbot.append((None,"<b style='color:green'>Mapping Results: </b><br>"+convert_to_html_table(mapping_search_results)+"<b style='color:green'>User Manual Search Results: </b><br>"+um_search_results))
+        if ui_action_dropdown == 'Query':
+            print("Starting to Query")
+            ui_chatbot.append(("Searching: "+ ui_search_text,None))
+            um_search_results = search_um(ui_search_text, ui_product_dropdown)
+            mapping_search_results = search_mapping_data(ui_search_text, ui_product_dropdown)
+            
+            ui_chatbot.append((None,"<b style='color:green'>Mapping Results: </b><br>"+convert_to_html_table(mapping_search_results)+"<b style='color:green'>User Manual Search Results: </b><br>"+um_search_results))
+        elif ui_action_dropdown == 'Update':
+            print("Starting to Update")
+            ui_chatbot.append(("Updating: "+ ui_search_text,None))
+        elif ui_action_dropdown == 'Delete':
+            print("Starting to Delete")
+            ui_chatbot.append(("Deleting: "+ ui_search_text,None))
     except Exception as e:
         print('Exception '+str(e))
         ui_chatbot.append((None,"<b style='color:red'>Exception "+str(e)+"</b>"))
@@ -415,21 +437,27 @@ def main():
         # Loading global variables
         ui_action_dropdown.change(
                                     fn=update_global_variables,
-                                    inputs=[ui_api_key,ui_weaviate_url,ui_chatbot],
-                                    outputs=[ui_chatbot,ui_product_dropdown]
+                                    inputs=[ui_action_dropdown, ui_api_key,ui_weaviate_url,ui_chatbot,ui_download_excel, ui_upload_excel],
+                                    outputs=[ui_chatbot,ui_product_dropdown,ui_download_excel, ui_upload_excel]
                                 )
 
-        # Search Text
-        ui_search_text.submit(fn=text_search,
-                            inputs=[ui_product_dropdown, ui_search_text, ui_chatbot],
-                            outputs=[ui_chatbot]
-                            )
+        try:
+            # Search Text
+            ui_search_text.submit(fn=text_search,
+                                inputs=[ui_action_dropdown, ui_product_dropdown, ui_search_text, ui_chatbot],
+                                outputs=[ui_chatbot]
+                                )
+        except Exception as e:
+            ui_chatbot.append((None,"<b style='color:red'>Exception Searching "+str(e)+"</b>"))
         
-        # Upload Mapping
-        ui_upload_excel.upload(fn=excel_file_search,
-                               inputs=[ui_product_dropdown, ui_upload_excel, ui_chatbot],
-                               outputs=[ui_chatbot,ui_download_excel]
-                              )
+        try:
+            # Upload Mapping
+            ui_upload_excel.upload(fn=excel_file_search,
+                                inputs=[ui_product_dropdown, ui_upload_excel, ui_chatbot],
+                                outputs=[ui_chatbot,ui_download_excel]
+                                )
+        except Exception as e:
+            ui_chatbot.append((None,"<b style='color:red'>Exception Searching Excel "+str(e)+"</b>"))
             
     demo.launch(server_name="0.0.0.0")
 
