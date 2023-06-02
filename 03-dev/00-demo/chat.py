@@ -369,6 +369,43 @@ def search_and_get_object_id_by_key(ui_search_text, ui_product_dropdown):
 
 
 ############################
+#### Update Mapping Data ###
+############################
+
+def update_mapping_by_object_id(ui_search_text, ui_product_dropdown):
+    global g_client
+    
+    print("started function - update_mapping_by_object_id")
+
+    try:
+        object_id, description = ui_search_text.split(", ")
+        embedding = create_openai_embeddings(description)
+        product_name = convert_to_camel_case(ui_product_dropdown+"_mapping")
+
+        data_object = {
+                        "description": description
+                      }
+        g_client \
+                .data_object \
+                .update(
+                            data_object,
+                            class_name=product_name,
+                            uuid=object_id,
+                            consistency_level=weaviate.data.replication.ConsistencyLevel.ALL,
+                            vector=embedding
+                       )
+
+    except Exception as e:
+        print("Error - "+str(e))
+        raise ValueError(str(e))
+    finally:
+        print("completed function - update_mapping_by_object_id")
+
+############################
+#### Delete Mapping Data ###
+############################
+
+############################
 ##### Search User Input ####
 ############################
 
@@ -391,6 +428,7 @@ def text_search(ui_action_dropdown, ui_product_dropdown, ui_search_text, ui_chat
         elif ui_action_dropdown == 'Update':
             print("Starting to Update")
             ui_chatbot.append(("Updating: "+ ui_search_text,None))
+            update_mapping_by_object_id(ui_search_text, ui_product_dropdown)
         elif ui_action_dropdown == 'Delete':
             print("Starting to Delete")
             ui_chatbot.append(("Deleting: "+ ui_search_text,None))
