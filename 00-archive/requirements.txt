@@ -1,0 +1,11 @@
+pandas
+openai
+langchain
+python-dotenv
+gradio
+weaviate-client
+pypdf
+tiktoken
+plotly
+scikit-learn
+openpyxl
