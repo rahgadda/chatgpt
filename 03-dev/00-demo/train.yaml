@@ -1,0 +1,79 @@
+# apiVersion: cert-manager.io/v1
+# kind: Certificate
+# metadata:
+#   name: certificate
+# spec:
+#   secretName: train-certificate-secret
+#   dnsNames:
+#   - "train.rahulgaddam.tech"
+#   issuerRef:
+#     name: clusterissuer
+#     kind: ClusterIssuer
+#     group: cert-manager.io
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: train
+  labels:
+    app: train
+spec:
+  ports:
+  - name: http
+    port: 7860
+    targetPort: 7860
+  selector:
+    app: train
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: train
+  labels:
+    app: train
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: train
+  template:
+    metadata:
+      labels:
+        app: train
+    spec:
+      containers:
+      - name: train
+        image: rahgadda/train
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 7860
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: train-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "5600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "5600"
+    nginx.ingress.kubernetes.io/proxy-body-size: 30m
+  labels:
+    app: train
+spec:
+  tls:
+    - hosts:
+      - train.rahulgaddam.tech
+      secretName: train-certificate-secret
+  rules:
+    - host: train.rahulgaddam.tech
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: train
+                port:
+                  number: 7860

@@ -1,0 +1,77 @@
+# apiVersion: cert-manager.io/v1
+# kind: Certificate
+# metadata:
+#   name: certificate
+# spec:
+#   secretName: chat-certificate-secret
+#   dnsNames:
+#   - "chat.rahulgaddam.tech"
+#   issuerRef:
+#     name: clusterissuer
+#     kind: ClusterIssuer
+#     group: cert-manager.io
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chat
+  labels:
+    app: chat
+spec:
+  ports:
+  - name: http
+    port: 7860
+    targetPort: 7860
+  selector:
+    app: chat
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat
+  labels:
+    app: chat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chat
+  template:
+    metadata:
+      labels:
+        app: chat
+    spec:
+      containers:
+      - name: chat
+        image: rahgadda/chat
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 7860
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: chat-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "5600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "5600"
+  labels:
+    app: chat
+spec:
+  tls:
+    - hosts:
+      - chat.rahulgaddam.tech
+      secretName: chat-certificate-secret
+  rules:
+    - host: chat.rahulgaddam.tech
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: chat
+                port:
+                  number: 7860
